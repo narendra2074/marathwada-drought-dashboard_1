@@ -1,7 +1,7 @@
 services:
   - type: web
-    name: drought-dashboard
+    name: marathwada-drought-dashboard
     env: python
-    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
-    startCommand: "gunicorn drought_dashboard:server"
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn drought_dashboard:app
     plan: free
