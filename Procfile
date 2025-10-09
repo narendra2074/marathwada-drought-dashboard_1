@@ -1,0 +1,1 @@
+web: gunicorn drought_dashboard:app.server

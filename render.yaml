@@ -3,5 +3,6 @@ services:
     name: marathwada-drought-dashboard
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn drought_dashboard:app
+    startCommand: gunicorn drought_dashboard:app.server
+    autoDeploy: true
     plan: free
