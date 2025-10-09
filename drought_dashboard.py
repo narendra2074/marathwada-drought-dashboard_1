@@ -104,6 +104,12 @@ app.index_string = '''
             .export-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(106, 27, 154, 0.3); }
             
             .trend-section { background: white; border-radius: 15px; padding: 20px; margin: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+            
+            .Select-control { background-color: white !important; color: #333 !important; }
+            .Select-menu-outer { background-color: white !important; }
+            .Select-option { color: #333 !important; background-color: white !important; }
+            .Select-option:hover { background-color: #f0f0f0 !important; color: #333 !important; }
+            .Select-value-label { color: #333 !important; font-weight: bold !important; }
         </style>
     </head>
     <body>
@@ -185,11 +191,11 @@ app.layout = html.Div(id='main-container', children=[
             ]),
             html.Div([
                 html.Label("Left Year:", style={'margin-right': '5px'}),
-                dcc.Dropdown(id='left-year', options=[{'label': year, 'value': year} for year in years], value=1984, style={'width': '100px', 'margin-right': '15px'})
+                dcc.Dropdown(id='left-year', options=[{'label': year, 'value': year} for year in years], value=1984, style={'width': '100px', 'margin-right': '15px', 'color': '#333', 'backgroundColor': 'white', 'fontWeight': 'bold'})
             ]),
             html.Div([
                 html.Label("Right Year:", style={'margin-right': '5px'}),
-                dcc.Dropdown(id='right-year', options=[{'label': year, 'value': year} for year in years], value=1981, style={'width': '100px', 'margin-right': '15px'})
+                dcc.Dropdown(id='right-year', options=[{'label': year, 'value': year} for year in years], value=1981, style={'width': '100px', 'margin-right': '15px', 'color': '#333', 'backgroundColor': 'white', 'fontWeight': 'bold'})
             ]),
             html.Button("📊💾 Export Data", id='export-btn', className='export-btn bounce'),
             html.Button("📈🔥 Show Trends", id='trend-btn', className='export-btn bounce', style={'margin-left': '10px'})
