@@ -486,6 +486,7 @@ def export_data(n_clicks):
         return "✅ Exported!"
     return "📊 Export"
 # Expose server for Render
+server = app.server
 if __name__ == "__main__":
     # Bind to 0.0.0.0 and use PORT from environment for Render
     import os
