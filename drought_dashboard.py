@@ -13,7 +13,7 @@ import sqlite3
 # Configuration
 USE_SQLITE = False
 
-# Themes (unchanged)
+# Themes
 themes = {
     'default': {'header': '#6A1B9A', 'bg': '#fafafa', 'card': '#ffffff', 'text': '#333333', 'border': '#e0e0e0', 'accent': '#8e24aa'},
     'dark': {'header': '#2d1b69', 'bg': '#121212', 'card': '#1e1e1e', 'text': '#ffffff', 'border': '#404040', 'accent': '#bb86fc'},
@@ -21,7 +21,7 @@ themes = {
     'forest': {'header': '#228B22', 'bg': '#f5fff5', 'card': '#ffffff', 'text': '#333333', 'border': '#90ee90', 'accent': '#66bb6a'}
 }
 
-# Load data (unchanged)
+# Load data
 def load_data():
     if USE_SQLITE:
         try:
@@ -34,7 +34,7 @@ def load_data():
         df = pd.read_csv('main_data_updated.csv')
     return df
 
-# Image processing (unchanged)
+# Image processing
 def get_map_image(url):
     try:
         response = requests.get(url, timeout=10)
@@ -64,10 +64,10 @@ def get_map_image(url):
     img_str = base64.b64encode(buffer.getvalue()).decode()
     return f"data:image/png;base64,{img_str}"
 
-# Initialize app (unchanged)
+# Initialize app
 app = dash.Dash(__name__)
 
-# CSS animations (unchanged)
+# CSS animations
 app.index_string = '''
 <!DOCTYPE html>
 <html>
@@ -132,17 +132,18 @@ app.index_string = '''
 </html>
 '''
 
-# Load data and colors (unchanged)
+# Load data and years
 df = load_data()
 years = sorted(df['year'].unique())
 
+# UPDATED COLOR SCHEME (Z-Score Based)
 colors = {
-    'Extreme_Drought': '#7e0000',
-    'Severe_Drought': '#d73027', 
-    'Moderate_Drought': '#fc8d59',
-    'Near_Normal': '#ffffbf',
-    'Moderately_Wet': '#91bfdb',
-    'Extremely_Wet': '#4575b4'
+    'Extreme_Drought': '#7e0000',   # < -2
+    'Severe_Drought': '#d73027',    # -2 to -1.5
+    'Moderate_Drought': '#fc8d59',  # -1.5 to -1
+    'Near_Normal': '#ffffbf',       # -1 to 1
+    'Moderately_Wet': '#91bfdb',    # 1 to 1.5
+    'Extremely_Wet': '#4575b4'      # > 1.5
 }
 
 icons = {
@@ -154,7 +155,14 @@ icons = {
     'Extremely_Wet': '🌊'
 }
 
-# Function to create the joint bar chart (unchanged)
+# Bar chart grouped colors
+bar_group_colors = {
+    'Drought': '#d73027',      # Severe red
+    'Near_Normal': '#ffffbf',  # Yellow
+    'Wet': '#4575b4'           # Extreme blue
+}
+
+# Function to create the joint bar chart
 def create_bar_chart(left_year, right_year, df, theme_name):
     theme = themes[theme_name]
     
@@ -171,21 +179,19 @@ def create_bar_chart(left_year, right_year, df, theme_name):
     
     categories = ['Drought', 'Near Normal', 'Wet']
     
-    bar_colors = ['#0077B6', '#00B4D8']
-    
     fig = go.Figure(data=[
         go.Bar(
             name=str(left_year),
             x=categories,
             y=[left_drought, left_normal, left_wet],
-            marker_color=bar_colors[0],
+            marker_color='#1f77b4',  # Blue for first year
             hovertemplate='<b>%{x}</b><br>%{fullData.name}: %{y:.1f} sq km<extra></extra>'
         ),
         go.Bar(
             name=str(right_year),
             x=categories,
             y=[right_drought, right_normal, right_wet],
-            marker_color=bar_colors[1],
+            marker_color='#ff7f0e',  # Orange for second year
             hovertemplate='<b>%{x}</b><br>%{fullData.name}: %{y:.1f} sq km<extra></extra>'
         )
     ])
@@ -205,11 +211,11 @@ def create_bar_chart(left_year, right_year, df, theme_name):
     
     return fig
 
-# Updated layout with confirmed no animation on main title
+# Layout
 app.layout = html.Div(id='main-container', children=[
     dcc.Store(id='theme-store', data='default'),
     
-    # Header (pulse animation on container, no animation on title, rounded corners)
+    # Header
     html.Div(id='header', children=[
         html.Div([
             html.H1("🌍Marathwada Drought Monitoring Dashboard", style={'margin': '0'}),
@@ -242,31 +248,31 @@ app.layout = html.Div(id='main-container', children=[
         ], style={'display': 'flex', 'align-items': 'center', 'flex-wrap': 'wrap', 'gap': '10px'})
     ]),
     
-    # Maps Section (unchanged)
+    # Maps Section
     html.Div(id='maps-section', className='scale-in', children=[
         html.H3("🗺️ Maps Comparison 🔍", className='bounce', style={'text-align': 'center', 'margin': '30px 0 20px 0'}),
         html.Div(id='maps-container', style={'display': 'flex', 'justify-content': 'center', 'gap': '30px', 'flex-wrap': 'wrap', 'margin-bottom': '30px'})
     ]),
     
-    # Pie Charts Section (unchanged)
+    # Pie Charts Section
     html.Div(id='pie-section', className='scale-in', children=[
         html.H3("📊 Distribution Charts 📈", className='bounce', style={'text-align': 'center', 'margin': '30px 0 20px 0'}),
         html.Div(id='pie-container', style={'display': 'flex', 'justify-content': 'center', 'gap': '30px', 'flex-wrap': 'wrap', 'margin-bottom': '30px'})
     ]),
     
-    # Bar Chart Section (unchanged)
+    # Bar Chart Section
     html.Div(id='bar-section', className='bar-section scale-in', children=[
         html.H3("📊 Bar Chart Comparison 🌡️", className='bounce', style={'text-align': 'center', 'margin': '30px 0 20px 0'}),
         html.Div(id='bar-container', className='chart-container', style={'width': '80%', 'margin': '0 auto'})
     ]),
     
-    # Comparison Section (unchanged)
+    # Comparison Section
     html.Div(id='comparison-section', className='fade-in', children=[
         html.H3("🔄 Year Comparison Analysis 🔍", className='bounce', style={'text-align': 'center', 'margin': '30px 0 20px 0'}),
         html.Div(id='comparison-table')
     ]),
     
-    # Footer (unchanged)
+    # Footer
     html.Div(id='footer', className='fade-in', children=[
         html.Div([
             html.P("Developed by: Narendra Tayade | Albedo Foundation", style={'text-align': 'left', 'margin': '10px 20px', 'font-size': '12px', 'opacity': '0.7'}),
@@ -278,7 +284,7 @@ app.layout = html.Div(id='main-container', children=[
     ])
 ])
 
-# Existing function (unchanged)
+# Create column content
 def create_column_content(year, df, theme_name):
     theme = themes[theme_name]
     year_data = df[df['year'] == year].iloc[0]
@@ -291,11 +297,13 @@ def create_column_content(year, df, theme_name):
     
     if non_zero_data:
         pie_categories, pie_values = zip(*non_zero_data)
-        
+        color_map = {'Near Normal': '#ffff00', 'Extreme Drought': '#7e0000', 'Severe Drought': '#d73027', 'Moderate Drought': '#fc8d59', 'Moderately Wet': '#91bfdb', 'Extremely Wet': '#4575b4'}
         fig = px.pie(
-            values=pie_values, names=[cat.replace('_', ' ') for cat in pie_categories],
-            title=f"{year} Distribution", hole=0.3,
-            color_discrete_map={cat.replace('_', ' '): colors[cat] for cat in pie_categories}
+            values=pie_values,
+            names=[cat.replace('_', ' ') for cat in pie_categories],
+            title=f"{year} Distribution",
+            hole=0.3,
+            color_discrete_map=color_map
         )
         fig.update_traces(
             textinfo='percent', textfont_size=14,
@@ -311,19 +319,18 @@ def create_column_content(year, df, theme_name):
     class_cards = []
     for cat in categories:
         value = year_data[cat]
-        
         class_cards.append(
             html.Div([
                 html.Div([
                     html.Span(icons[cat], style={'font-size': '18px', 'margin-right': '5px'}),
-                    html.Span(cat.replace('_', ' '), style={'font-weight': 'bold', 'font-size': '10px', 'color': 'white'})
+                    html.Span(cat.replace('_', ' '), style={'font-weight': 'bold', 'font-size': '10px', 'color': 'black'})
                 ], style={'text-align': 'center', 'padding': '6px'}),
                 html.Div(f"{value:.1f}", style={
                     'text-align': 'center', 'font-weight': 'bold', 'font-size': '12px',
                     'color': 'white', 'padding': '4px'
                 })
             ], style={
-                'background-color': colors[cat],
+                'background-color': colors[cat],  # Correct color
                 'border-radius': '6px',
                 'margin': '2px',
                 'flex': '1',
@@ -347,7 +354,7 @@ def create_column_content(year, df, theme_name):
         ])
     ])
 
-# Comparison table (unchanged)
+# Comparison table
 def create_comparison_table(left_year, right_year, df, theme_name):
     theme = themes[theme_name]
     categories = ['Extreme_Drought', 'Severe_Drought', 'Moderate_Drought', 'Near_Normal', 'Moderately_Wet', 'Extremely_Wet']
@@ -379,21 +386,19 @@ def create_comparison_table(left_year, right_year, df, theme_name):
         html.Tbody(rows)
     ], style={'width': '100%', 'border-collapse': 'collapse', 'background-color': theme['card'], 'border-radius': '10px', 'overflow': 'hidden', 'box-shadow': '0 4px 8px rgba(0,0,0,0.1)', 'margin': '0 20px'})
 
-# Theme callback (unchanged)
+# Theme callback
 @app.callback(
     [Output('main-container', 'style'), Output('header', 'style'), Output('footer', 'style')],
     Input('theme-selector', 'value')
 )
 def update_theme(theme_name):
     theme = themes[theme_name]
-    
     main_style = {'background-color': theme['bg'], 'color': theme['text'], 'min-height': '100vh', 'transition': 'all 0.3s ease'}
     header_style = {'background': f'linear-gradient(135deg, {theme["header"]}, {theme["accent"]})', 'padding': '20px', 'display': 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'color': 'white', 'box-shadow': '0 4px 8px rgba(0,0,0,0.2)'}
     footer_style = {'background-color': theme['card'], 'color': theme['text'], 'border-top': f'1px solid {theme["border"]}'}
-    
     return main_style, header_style, footer_style
 
-# Map section (unchanged)
+# Maps section
 def create_maps_section(left_year, right_year, df, theme_name):
     theme = themes[theme_name]
     left_data = df[df['year'] == left_year].iloc[0]
@@ -407,10 +412,11 @@ def create_maps_section(left_year, right_year, df, theme_name):
             cards.append(
                 html.Div([
                     html.Span(icons[cat], style={'font-size': '16px', 'margin-right': '8px'}),
-                    html.Span(cat.replace('_', ' '), style={'font-weight': 'bold', 'font-size': '12px', 'color': 'white', 'flex': '1'}),
-                    html.Span(f"{value:.1f}", style={'font-weight': 'bold', 'font-size': '12px', 'color': 'white'})
+                    html.Span(cat.replace('_', ' '), style={'font-weight': 'bold', 'font-size': '12px', 'color': 'black', 'flex': '1'}),
+                    html.Span(f"{value:.1f}", style={'font-weight': 'bold', 'font-size': '12px', 'color': 'black'})
                 ], className='legend-card scale-in hover-glow', style={
-                    'background-color': colors[cat], 'border-radius': '6px', 'padding': '8px',
+                    'background-color': colors[cat],  # Correct color
+                    'border-radius': '6px', 'padding': '8px',
                     'margin': '2px 0', 'display': 'flex', 'align-items': 'center', 'min-height': '40px', 'width': '160px',
                     'animation-delay': f'{i * 0.1}s'
                 })
@@ -438,82 +444,70 @@ def create_maps_section(left_year, right_year, df, theme_name):
         create_vertical_cards(right_data)
     ], style={'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'gap': '10px'})
 
-# Pie charts section (unchanged)
+
+# Pie charts section
 def create_pie_charts_section(left_year, right_year, df, theme_name):
     theme = themes[theme_name]
-    
-    def create_pie_chart(year):
+
+    # Consistent color mapping (GEE drought class colors)
+    color_map = {
+        'Extreme Drought': colors['Extreme_Drought'],
+        'Severe Drought': colors['Severe_Drought'],
+        'Moderate Drought': colors['Moderate_Drought'],
+        'Near Normal': colors['Near_Normal'],
+        'Moderately Wet': colors['Moderately_Wet'],
+        'Extremely Wet': colors['Extremely_Wet']
+    }
+
+    def create_pie(year):
         year_data = df[df['year'] == year].iloc[0]
         categories = ['Extreme_Drought', 'Severe_Drought', 'Moderate_Drought', 'Near_Normal', 'Moderately_Wet', 'Extremely_Wet']
-        values = [year_data[cat] for cat in categories]
-        non_zero_data = [(cat, val) for cat, val in zip(categories, values) if val > 0]
-        
-        if non_zero_data:
-            pie_categories, pie_values = zip(*non_zero_data)
-            fig = px.pie(
-                values=pie_values, names=[cat.replace('_', ' ') for cat in pie_categories],
-                title=f"{year} Distribution", hole=0.3,
-                color_discrete_map={cat.replace('_', ' '): colors[cat] for cat in pie_categories}
-            )
-            fig.update_traces(
-                textinfo='percent', textfont_size=14,
-                hovertemplate='<b>%{label}</b><br>Area: %{value:.1f} sq km<br>Percentage: %{percent}<extra></extra>'
-            )
-            fig.update_layout(
-                showlegend=False, height=300, margin=dict(t=40, b=0, l=0, r=0),
-                paper_bgcolor=theme['card'], plot_bgcolor=theme['card'], font_color=theme['text']
-            )
-        else:
-            fig = px.pie(values=[1], names=['No Data'], title=f"{year} Distribution")
-        return fig
-    
-    return html.Div([
-        html.Div([dcc.Graph(figure=create_pie_chart(left_year))], className='chart-container', style={'flex': '1', 'margin': '0 15px'}),
-        html.Div([dcc.Graph(figure=create_pie_chart(right_year))], className='chart-container', style={'flex': '1', 'margin': '0 15px'})
-    ], style={'display': 'flex', 'justify-content': 'center', 'gap': '20px', 'flex-wrap': 'wrap'})
+        values = [year_data[c] for c in categories]
+        pie_df = pd.DataFrame({
+            'Category': [c.replace('_', ' ') for c in categories],
+            'Value': values
+        })
+        pie_df = pie_df[pie_df['Value'] > 0]
 
-# Classes section (unchanged)
-def create_classes_section(left_year, right_year, df, theme_name):
-    def create_class_cards(year):
-        year_data = df[df['year'] == year].iloc[0]
-        categories = ['Extreme_Drought', 'Severe_Drought', 'Moderate_Drought', 'Near_Normal', 'Moderately_Wet', 'Extremely_Wet']
-        class_cards = []
-        
-        for cat in categories:
-            value = year_data[cat]
-            class_cards.append(
-                html.Div([
-                    html.Div([
-                        html.Span(icons[cat], style={'font-size': '18px', 'margin-right': '5px'}),
-                        html.Span(cat.replace('_', ' '), style={'font-weight': 'bold', 'font-size': '10px', 'color': 'white'})
-                    ], style={'text-align': 'center', 'padding': '6px'}),
-                    html.Div(f"{value:.1f}", style={
-                        'text-align': 'center', 'font-weight': 'bold', 'font-size': '12px',
-                        'color': 'white', 'padding': '4px'
-                    })
-                ], className='hover-scale', style={
-                    'background-color': colors[cat],
-                    'border-radius': '6px',
-                    'margin': '2px',
-                    'flex': '1',
-                    'min-width': '140px',
-                    'height': '80px',
-                    'cursor': 'pointer',
-                    'transition': 'all 0.4s ease'
-                })
-            )
-        
-        return html.Div([
-            html.Div(class_cards[:3], style={'display': 'flex', 'margin-bottom': '8px', 'justify-content': 'center'}),
-            html.Div(class_cards[3:], style={'display': 'flex', 'justify-content': 'center'})
-        ], style={'width': '100%', 'max-width': '500px'})
-    
-    return html.Div([
-        html.Div([create_class_cards(left_year)], style={'flex': '1', 'margin': '0 15px'}),
-        html.Div([create_class_cards(right_year)], style={'flex': '1', 'margin': '0 15px'})
-    ], style={'display': 'flex', 'justify-content': 'center', 'gap': '20px', 'flex-wrap': 'wrap'})
+        fig = px.pie(
+            pie_df,
+            names='Category',
+            values='Value',
+            title=f"{year} Drought Distribution",
+            hole=0.3,
+            color='Category',
+            color_discrete_map=color_map
+        )
 
-# Callback (unchanged)
+        fig.update_traces(
+            textinfo='percent',
+            hovertemplate='<b>%{label}</b><br>Area: %{value:.1f} sq km<br>Percentage: %{percent}<extra></extra>'
+        )
+        fig.update_layout(
+            showlegend=True,
+            height=350,
+            margin=dict(t=60, b=0, l=0, r=0),
+            paper_bgcolor=theme['card'],
+            plot_bgcolor=theme['card'],
+            font_color=theme['text'],
+            title_x=0.5
+        )
+        return dcc.Graph(figure=fig, style={'width': '100%', 'maxWidth': '500px'})
+
+    return html.Div([
+        create_pie(left_year),
+        create_pie(right_year)
+    ], style={
+        'display': 'flex',
+        'justify-content': 'center',
+        'align-items': 'center',
+        'gap': '40px',
+        'flex-wrap': 'nowrap',
+        'margin': '0 auto',
+        'width': '90%'
+    })
+
+# Main callback
 @app.callback(
     [
         Output('maps-container', 'children'),
@@ -535,7 +529,7 @@ def update_dashboard(left_year, right_year, theme_name):
     
     return maps_section, pie_section, comparison_table, bar_chart
 
-# Server setup (unchanged)
+# Run server
 server = app.server
 if __name__ == "__main__":
     import os
