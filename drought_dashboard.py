@@ -137,12 +137,12 @@ df = load_data()
 years = sorted(df['year'].unique())
 
 colors = {
-    'Extreme_Drought': '#8B0000',
-    'Severe_Drought': '#FF4500', 
-    'Moderate_Drought': '#FFD700',
-    'Near_Normal': '#32CD32',
-    'Moderately_Wet': '#4169E1',
-    'Extremely_Wet': '#0000FF'
+    'Extreme_Drought': '#7e0000',
+    'Severe_Drought': '#d73027', 
+    'Moderate_Drought': '#fc8d59',
+    'Near_Normal': '#ffffbf',
+    'Moderately_Wet': '#91bfdb',
+    'Extremely_Wet': '#4575b4'
 }
 
 icons = {
